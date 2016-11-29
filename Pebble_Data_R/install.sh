@@ -10,3 +10,11 @@ sudo pip install redis
 sudo pip install supervisor
 
 cp ~/besi-relay-station/Pebble_Data_R/supervisord.service /etc/systemd/system/supervisord.service
+
+# install supervisor config
+mkdir /etc/supervisor
+cp rsupervisord.conf /etc/supervisor/supervisord.conf
+
+# enable supervisord.service
+systemctl enable supervisord.service
+systemctl start supervisord.service
