@@ -13,7 +13,7 @@ cp ~/besi-relay-station/Pebble_Data_R/supervisord.service /etc/systemd/system/su
 
 # install supervisor config
 mkdir /etc/supervisor
-cp rsupervisord.conf /etc/supervisor/supervisord.conf
+cp ~/besi-relay-station/Pebble_Data_R/supervisord.conf /etc/supervisor/supervisord.conf
 
 # enable supervisord.service
 systemctl enable supervisord.service
