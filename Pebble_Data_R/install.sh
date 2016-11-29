@@ -9,4 +9,4 @@ sudo pip install msgpack-python
 sudo pip install redis
 sudo pip install supervisor
 
-cp supervisord.service /etc/systemd/system/supervisord.service
+cp ~/besi-relay-station/Pebble_Data_R/supervisord.service /etc/systemd/system/supervisord.service
