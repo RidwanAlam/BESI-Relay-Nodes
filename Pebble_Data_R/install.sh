@@ -3,11 +3,10 @@
 ntpdate -b -s -u pool.ntp.org
 
 # install dependencies
-pip install https://gitlab.com/besi/libpebble2/repository/archive.zip?ref=master
-apt-get update
-apt-get install python-zmq
-pip install msgpack-python
-pip install redis
-pip install supervisor
+sudo pip install https://gitlab.com/besi/libpebble2/repository/archive.zip?ref=master
+sudo apt-get install python-zmq
+sudo pip install msgpack-python
+sudo pip install redis
+sudo pip install supervisor
 
 cp supervisord.service /etc/systemd/system/supervisord.service
