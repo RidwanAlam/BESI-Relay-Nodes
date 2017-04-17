@@ -77,5 +77,5 @@ try:
 
 except SerialException:
     print("Pebble disconnected unexpectedly")
-
+    #pebble.close()
     exit(2)
