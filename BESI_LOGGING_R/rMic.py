@@ -117,7 +117,7 @@ def soundSense(startDateTime, hostIP, BASE_PORT, streaming = True, logging = Tru
 		currTimeDelta = (currTime - startTime).days * 86400 + (currTime - startTime).seconds + (currTime - startTime).microseconds / 1000000.0
 			
 		# run the c code to get one second of data from the ADC
-		proc = subprocess.Popen(["./ADC1"], stdout=subprocess.PIPE,)
+		proc = subprocess.Popen(["./root/besi-relay-station/BESI_LOGGING_R/ADC1"], stdout=subprocess.PIPE,)
 		# anything printed in ADC.c is captured in output
 		output = proc.communicate()[0]
 		split_output = output.split(',')

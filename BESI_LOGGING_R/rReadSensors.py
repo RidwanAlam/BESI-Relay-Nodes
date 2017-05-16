@@ -14,7 +14,10 @@ import sys
 import os
 
 # get BS IP and RS port # from config file
-fconfig = open("config")
+configFileName = r'/root/besi-relay-station/BESI_LOGGING_R/config'
+#configDirName = os.path.dirname(configFileName)
+#os.chdir(configDirName)
+fconfig = open(configFileName)
 for line in fconfig:
 	if line[0] == "#":
             pass
