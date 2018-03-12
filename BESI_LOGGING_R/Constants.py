@@ -10,9 +10,11 @@ LOOP_DELAY = 0.1                # loop time in seconds
 IS_STREAMING = True             # stream to base station 
 IS_LOGGING = True               # log on Beaglebone
 FILE_LENGTH = 3600
+ADC_LENGTH = 600
 UPDATE_LENGTH = 20
 BASE_PATH = "/media/card/"
 #BASE_PATH = "Data/"
+NOTI_CHECK_DELAY = 20			#check noti from basestation every ... seconds
 
 
 # BME 280 parameters

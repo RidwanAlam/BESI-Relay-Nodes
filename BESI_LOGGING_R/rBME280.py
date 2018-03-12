@@ -14,6 +14,14 @@ import ctypes
 import subprocess
 
 
+global agiType
+global agiIndx
+global agiStatus
+
+agiType = 0
+agiIndx = 0
+agiStatus = False
+
 # calibration values set at manufacture time
 class BME280Calib:
 	def __init__(self, i2c):
@@ -90,6 +98,12 @@ def readHumidity(i2c, calib, t_fine):
 
 # reads weather data and stores in a local file
 def weatherSense(startDateTime, hostIP, BASE_PORT, streaming=True, logging=True):
+    
+    global agiType
+    global agiIndx
+    global agiStatus
+
+
     i2c = BME280Init(0x77, 2)
     calib = BME280Calib(i2c)
 	
@@ -97,7 +111,7 @@ def weatherSense(startDateTime, hostIP, BASE_PORT, streaming=True, logging=True)
     server_address = (hostIP, BASE_PORT)
     startTimeDT = rNTPTime.stripDateTime(startDateTime)
     weatherFileName = BASE_PATH+"Relay_Station{0}/Weather/Weather{1}.txt".format(BASE_PORT, startTimeDT)
-    sensorMessage = " weather "
+    weatherMessage = []
         
     with open(weatherFileName, "w") as weatherFile:
 			weatherFile.write(startDateTime+"\n")
@@ -111,61 +125,98 @@ def weatherSense(startDateTime, hostIP, BASE_PORT, streaming=True, logging=True)
     sumTemp = 0
     dummyvar = 0
     while True:
-		if iterations >= FILE_LENGTH:
-			# update BS and get current time
-			sumHum = sumHum/dummyvar
-			sumPres = sumPres/dummyvar
-			sumTemp = sumTemp/dummyvar
-			startDateTime = rNTPTime.sendUpdate(server_address, iterations, sensorMessage, sumHum, sumPres, sumTemp, 0, 5)
-			iterations = -1
-			sumHum = 0
-			sumPres = 0
-			sumTemp = 0
-			dummyvar = 0
+        if iterations >= FILE_LENGTH:
+            # update BS and get current time
+            sumHum = sumHum/dummyvar
+            sumPres = sumPres/dummyvar
+            sumTemp = sumTemp/dummyvar
+
+            weatherMessage = []
+            weatherMessage.append("Weather")
+            weatherMessage.append(str("{0:.3f}".format(sumHum)))
+            weatherMessage.append(str("{0:.3f}".format(sumPres)))
+            weatherMessage.append(str("{0:.3f}".format(sumTemp)))
+            startDateTime = rNTPTime.sendUpdate(server_address, weatherMessage, 5)
+
+            #agiIndx = update[0]
+            #agiType = update[1]
+            #if agiType!=0:
+            #    agiStatus = True
+            #else:
+            #    agiStatus = False
+            #startDateTime = update[2]
+
+
+            #startDateTime = rNTPTime.sendUpdate(server_address, iterations, sensorMessage, sumHum, sumPres, sumTemp, 0, 5)
+            iterations = -1
+            sumHum = 0
+            sumPres = 0
+            sumTemp = 0
+            dummyvar = 0
 				
-			if startDateTime != None:
-				startTimeDT = rNTPTime.stripDateTime(startDateTime)
-				#startTimeDT = datetime.datetime.now()
+            if startDateTime != None:
+                startTimeDT = rNTPTime.stripDateTime(startDateTime)
+                #startTimeDT = datetime.datetime.now()
 			
-				weatherFileName = BASE_PATH+"Relay_Station{0}/Weather/Weather{1}.txt".format(BASE_PORT, startTimeDT)
-				with open(weatherFileName, "w") as weatherFile:
-						weatherFile.write(startDateTime+"\n")
-						weatherFile.write("Deployment ID: Unknown, Relay Station ID: {}\n".format(BASE_PORT))
-						weatherFile.write("Timestamp,Temperature,Pressure,Humidity\n")
-				weatherFile.close()
-				startTime = datetime.datetime.now()
+                weatherFileName = BASE_PATH+"Relay_Station{0}/Weather/Weather{1}.txt".format(BASE_PORT, startTimeDT)
+                with open(weatherFileName, "w") as weatherFile:
+                    weatherFile.write(startDateTime+"\n")
+                    weatherFile.write("Deployment ID: Unknown, Relay Station ID: {}\n".format(BASE_PORT))
+                    weatherFile.write("Timestamp,Temperature,Pressure,Humidity\n")
+		
+                startTime = datetime.datetime.now()
 		
 		# every UPDATE_LENGTH send update to BS
-		elif (iterations % UPDATE_LENGTH) == (UPDATE_LENGTH - 2):
-			sumHum = sumHum/UPDATE_LENGTH
-			sumPres = sumPres/UPDATE_LENGTH
-			sumTemp = sumTemp/UPDATE_LENGTH
-			rNTPTime.sendUpdate(server_address, iterations, sensorMessage, sumHum, sumPres, sumTemp, 0, 5)
-			sumHum = 0
-			sumPres = 0
-			sumTemp = 0
-			dummyvar = 0
+        elif (iterations % UPDATE_LENGTH) == (UPDATE_LENGTH - 2):
+            sumHum = sumHum/UPDATE_LENGTH
+            sumPres = sumPres/UPDATE_LENGTH
+            sumTemp = sumTemp/UPDATE_LENGTH
+
+            weatherMessage = []
+            weatherMessage.append("Weather")
+            weatherMessage.append(str("{0:.3f}".format(sumHum)))
+            weatherMessage.append(str("{0:.3f}".format(sumPres)))
+            weatherMessage.append(str("{0:.3f}".format(sumTemp)))
+#            weatherMessage.append(str(sumHum))
+#            weatherMessage.append(str(sumPres))
+#            weatherMessage.append(str(sumTemp))
+            startDateTime = rNTPTime.sendUpdate(server_address, weatherMessage, 5)
+
+            #agiIndx = update[0]
+            #agiType = update[1]
+            #if agiType!=0:
+            #    agiStatus = True
+            #else:
+            #    agiStatus = False
+            #startDateTime = update[2]
+
+
+            #rNTPTime.sendUpdate(server_address, iterations, sensorMessage, sumHum, sumPres, sumTemp, 0, 5)
+            sumHum = 0
+            sumPres = 0
+            sumTemp = 0
+            dummyvar = 0
 			
 
-		iterations += 1
-		dummyvar += 1
+        iterations += 1
+        dummyvar += 1
 
-		# calculate time since start
-		currTime = datetime.datetime.now()
-		currTimeDelta = (currTime - startTime).days * 86400 + (currTime - startTime).seconds + (currTime - startTime).microseconds / 1000000.0
-		# read sensor data over I2C
-		(temp,t_fine) = readTemp(i2c, calib)
-		pressure = readPressure(i2c, calib, t_fine)
-		humidity = readHumidity(i2c, calib, t_fine)
+        # calculate time since start
+        currTime = datetime.datetime.now()
+        currTimeDelta = (currTime - startTime).days * 86400 + (currTime - startTime).seconds + (currTime - startTime).microseconds / 1000000.0
+        # read sensor data over I2C
+        (temp,t_fine) = readTemp(i2c, calib)
+        pressure = readPressure(i2c, calib, t_fine)
+        humidity = readHumidity(i2c, calib, t_fine)
 					
-		with open(weatherFileName, "a") as weatherFile:
-			weatherFile.write("{0:.2f},{1:.2f},{2:.2f},{3:.2f},\n".format(currTimeDelta, temp, pressure, humidity))
-		weatherFile.close()
-		sumHum = sumHum + humidity
-		sumPres = sumPres + pressure
-		sumTemp = sumTemp + temp
+        with open(weatherFileName, "a") as weatherFile:
+            weatherFile.write("{0:.2f},{1:.2f},{2:.2f},{3:.2f},\n".format(currTimeDelta, temp, pressure, humidity))
+
+        sumHum = sumHum + humidity
+        sumPres = sumPres + pressure
+        sumTemp = sumTemp + temp
 		
-		time.sleep(LOOP_DELAY * UPDATE_DELAY)	
+        time.sleep(LOOP_DELAY * UPDATE_DELAY)	
 
 
 #print datetime.datetime.now()

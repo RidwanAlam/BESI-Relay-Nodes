@@ -6,6 +6,15 @@ import socket
 import struct, time
 import datetime
 
+
+global agiType
+global agiStatus
+global agiIndx
+
+agiType = 0
+agiIndx = 0
+agiStatus = False
+
 # accesses NTP server to get current time
 # not used
 def getDateTime_old():
@@ -68,42 +77,102 @@ def stripDateTime(dateTimeString):
 # send an update message to the BaseStation	
 global disconnFlag
 disconnFlag = True
-def sendUpdate(server_address, iterations, message, sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0, timeout = 5):
-	global disconnFlag
-	updateSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	updateSock.settimeout(timeout)
-	try:
-		updateSock.connect(server_address)
-		if disconnFlag:
-			updateSock.sendall("Connection Up!")
-			print "Connection Up!"
-			disconnFlag = False
-		else:
-			updateSock.sendall("{}".format(iterations) + message + "{} {} {} {}".format(sum1,sum2,sum3,sum4))
-			print "Send success for" + message
-		# first 3 bytes are length of message
-		msgLen = ''
-		while (len(msgLen) < 3):
-			try:
-				msgLen = msgLen + updateSock.recv(3)
-			except:
-				# if this fails, just return, which indicates failed update
-				return
-		msgLen = int(msgLen)
-		data = ''    
-		# call recv until we get all the data
-		while (len(data) < msgLen):
-			try:
-				data = data + updateSock.recv(msgLen)
-			except:
-				return
-		splitData = data.split(",")
-		print "Return success!"
-		#data format is <ShimmerID1>,<ShimmerID2>,<current time>
-		# return current BS time
-		return splitData[2] 
-		
-	except:
-		print "error updating base station while in" + message
-		disconnFlag = True
-	return
+def sendUpdate(server_address, message, timeout=5):
+    #iterations, message, sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0, timeout = 5):
+    global disconnFlag
+
+    updateSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    updateSock.settimeout(timeout)
+    try:
+        updateSock.connect(server_address)
+        if disconnFlag:
+            updateSock.sendall("Connection Up!")
+            print "Connection Up!"
+            disconnFlag = False
+        else:
+            updateSock.sendall(";".join(message))
+            #updateSock.sendall("{}".format(iterations) + message + "{} {} {} {}".format(sum1,sum2,sum3,sum4))
+            print "Send success for " + message[0]
+            # first 3 bytes are length of message
+            msgLen = ''
+            while (len(msgLen) < 3):
+                try:
+                    msgLen = msgLen + updateSock.recv(3)
+                except:
+                    # if this fails, just return, which indicates failed update
+                    return
+            msgLen = int(msgLen)
+            data = ''    
+            # call recv until we get all the data
+            while (len(data) < msgLen):
+                try:
+                    data = data + updateSock.recv(msgLen)
+                except:
+                    return
+            splitData = data.split(";")
+            agiIndx = splitData[0]
+            agiType = splitData[1]
+            if agiType!=0:
+                agiStatus = True
+            else:
+                agiStatus = False
+            print ("Return success! {}; {}; {}".format(agiIndx,agiType,splitData[2]))
+            # print agiStatus
+            #data format is <ShimmerID1>,<ShimmerID2>,<current time>
+            # return current BS time
+            return splitData[2]
+            	
+    except:
+        print "error updating base station while in " + message[0]
+        disconnFlag = True
+    return
+
+def checkNoti(hostIP, message, timeout=5):
+    #iterations, message, sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0, timeout = 5):
+    global disconnFlag
+    global notiFlag
+    notiFlag = False
+
+    NOTIFICATION_PORT = 15000
+    server_address = (hostIP, NOTIFICATION_PORT)
+
+    updateSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    updateSock.settimeout(timeout)
+    try:
+        updateSock.connect(server_address)
+        if disconnFlag:
+            updateSock.sendall("Connection Up!")
+            print "Connection Up!"
+            disconnFlag = False
+        else:
+            updateSock.sendall(";".join(message))
+            #updateSock.sendall("{}".format(iterations) + message + "{} {} {} {}".format(sum1,sum2,sum3,sum4))
+            print "Send success for " + message[0]
+            # first 3 bytes are length of message
+            msgLen = ''
+            while (len(msgLen) < 3):
+                try:
+                    msgLen = msgLen + updateSock.recv(3)
+                except:
+                    # if this fails, just return, which indicates failed update
+                    return
+            msgLen = int(msgLen)
+            data = ''    
+            # call recv until we get all the data
+            while (len(data) < msgLen):
+                try:
+                    data = data + updateSock.recv(msgLen)
+                except:
+                    return
+            splitData = data.split(";")
+            notiFlag = splitData[1]
+            print ("Return success! notiFlag = {}; {}".format(notiFlag,splitData[2]))
+            #data format is <ShimmerID1>,<ShimmerID2>,<current time>
+            # return current BS time
+            return splitData[2]
+                
+    except:
+        print "error updating base station while in " + message[0]
+        disconnFlag = True
+    return
+
