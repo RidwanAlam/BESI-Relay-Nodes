@@ -1,5 +1,6 @@
 # Relay-Nodes
 The code for the relay nodes of the BESI system [1].
+
 The relay nodes are implemented on an embedded computer board, the Beaglebone Black. 
 The board features an ARM Cortex-A8 processor, 512 MB of RAM, and 4GB of flash memory. 
 It provides interfaces like GPIO, ADC, SPI, and I2C for peripheral devices 
