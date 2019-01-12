@@ -39,6 +39,11 @@ file_path = "/media/card/memini/"
 #
 meminifilename = str(file_path) + "memini_data.csv"
 
+if not os.path.exists(file_path):
+	os.mkdir(file_path)
+	# with open(meminifilename, "w") as meminifile:
+		
+
 global agiType
 global agiStatus
 global agiIndx
@@ -357,7 +362,8 @@ def create_notification(agitationType):
 	# notification_info="Agitation Detected!"
 	# notification_param="Yes/No?"
 	# notification_msg = notification_info + "\nType: " + notification_type + "\n\nConfirm: " + notification_param
-	notification_msg = "Any\nAgitation\nEvents\nToday?"
+	# notification_msg = "Any\nAgitation\nEvents\nToday?"
+	notification_msg = "Agitation\nDetected\n\nNo/Yes?"
 	return notification_msg
 
 
@@ -379,8 +385,8 @@ def memini_main(mainMsgService,mainCommHandler,mainMsgHandler):
 	#print "notiFlag = " + str(rNTPTime.notiFlag)
 	# if agiStatus == True:
 
-
 	if int(rNTPTime.notiFlag) == 1:
+	# if True: #for testing
 		notification = create_notification(agiType)
 		#notification_type + "\n\n" + notification_info + "\n\n" + notification_param  
 		mainCommHandler.send_message({NOTIFICATION_TO_WATCH: CString(notification)})
@@ -432,6 +438,7 @@ def meminiSense(startDateTime,hostIP,BASE_PORT,streaming=True,logging=True):
 			appUUID = APP_UUID[:]
 
 			print "initializing Pebble connection.."
+			# print pebble.send_and_read(AppRunState(data=AppRunStateRequest()), AppRunState).data.uuid
 
 			while running:
 				try:
@@ -462,7 +469,8 @@ def meminiSense(startDateTime,hostIP,BASE_PORT,streaming=True,logging=True):
 					mainMsgService.register_handler("appmessage", mainMsgHandler.message_received_event)
 
 					break
-				except:
+				except Exception as err:
+					print err
 					print "Error Initializing Services, retrying.."
 					pebble.run_async()
 					continue
@@ -474,8 +482,10 @@ def meminiSense(startDateTime,hostIP,BASE_PORT,streaming=True,logging=True):
 				pebbleMessage.append("checkNoti") #check for notiFlag from basestation
 				pebbleMessage.append(str(BASE_PORT))
 				temp = rNTPTime.checkNoti(hostIP, pebbleMessage, 5) 
+				# if True: #for testing
 				if int(rNTPTime.notiFlag) == 1:
 					memini_main(mainMsgService,mainCommHandler,mainMsgHandler)
+					# print("sending Message")
 				else:
 					#print "NO NOTIFICATION"
 					time.sleep(NOTI_CHECK_DELAY)
@@ -483,4 +493,8 @@ def meminiSense(startDateTime,hostIP,BASE_PORT,streaming=True,logging=True):
 			print("Pebble Disconnected!")
 			time.sleep(30)
 			continue
+
+		except Exception as err:
+			print err
+			pass
 			# exit(2)
