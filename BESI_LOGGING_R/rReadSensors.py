@@ -15,7 +15,7 @@ import logging
 
 from rawADC import readADC
 from Audio import audioFeatureExt
-from PebbleFeatureExt_new import motionFeatExt
+from rMotionFeature import motionFeatExt
 
 from threading import Lock
 
