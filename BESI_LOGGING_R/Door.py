@@ -9,7 +9,6 @@ import sys
 import rawADC
 import numpy
 from scipy import ndimage
-import os
 
 def doorSensor(startDateTime, hostIP, BASE_PORT):
 
@@ -114,12 +113,6 @@ def doorSensor(startDateTime, hostIP, BASE_PORT):
 			for line in open(rawADCFileName).xreadlines(  ): rawlineCount += 1
 
 			if rawlineCount==currLine:
-
-				#delete the previous rawADCFile
-				try:
-				    os.remove(rawADCFileName)
-				except OSError:
-				    pass
 
 				startDateTime = rawADC.rawADC_startDateTime
 				startTimeDT = str(rawADC.rawADC_Time)
